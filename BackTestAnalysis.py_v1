@@ -1,0 +1,130 @@
+import sys
+from datetime import datetime
+import numpy as np
+import pandas as pd
+import os.path
+
+from pandas import DataFrame, Series 
+
+
+"""
+Timestamp             object
+Ticker                object
+Bid Price            float64
+Bid Size               int64
+Ask Price            float64
+Ask Size               int64
+Expiry                object
+Strike               float64
+Right                 object
+Underlying           float64
+ImpliedVolatility    float64
+Delta                float64
+Gamma                float64
+Vega                 float64
+Theta                float64
+Rho                  float64
+"""
+
+def loadOptionFile(dataDate, ticker, dirPath):
+    optionDF = pd.DataFrame()
+
+    formattedFileDate = dataDate.strftime("%Y-%m-%d")
+    try:
+        fileName = dirPath+"/"+ticker+"-"+formattedFileDate+"-greeks.csv"
+        print("Filename " + fileName)
+        optionDF = pd.read_csv(fileName)
+        #break
+    except:
+        print('file does not exist')
+        
+    return optionDF
+
+def getOptionsWithDelta(optionDataFrame, delta):
+    returnDataFrame = pd.DataFrame(columns= optionDataFrame.columns)
+    deltaDataFrame = optionDataFrame[(optionDataFrame["Delta"]>(delta-0.05)) & (optionDataFrame["Delta"] < (delta + 0.05))]
+    uniqueDates = deltaDataFrame.Expiry.unique()
+    print(uniqueDates)
+
+    # get the middle row in the options
+    for date in uniqueDates:
+        # count the number of 
+        optionsInTheRange = deltaDataFrame[deltaDataFrame["Expiry"] == date]
+        #print(optionsInTheRange.head())
+        numberOfOptions = optionsInTheRange.shape[0]
+        #print("Number of options is " + str(numberOfOptions))
+        correctRow = int((numberOfOptions+1)/2)
+        #print("Correct Row is")
+        #print(correctRow)
+        correctRowData = optionsInTheRange.iloc[correctRow - 1]
+        #print("Correct Row Data")
+        #print(correctRowData)
+        returnDataFrame = returnDataFrame.append(correctRowData, ignore_index= True)
+    
+    return returnDataFrame
+
+def getOptionWithDaystoExpiry(numberOfDays, optionsDataFrame):
+    numberOfOptions = optionsDataFrame.shape[0]
+    i = 0
+
+    currentDifference = 10000
+    currentRow = i
+    print("Number of options " + str(numberOfOptions))
+
+    while i < numberOfOptions:
+        
+        firstDataRow = optionsDataFrame.iloc[i]   
+        newDifference = datetime.strptime(firstDataRow["Expiry"], '%m/%d/%Y') - datetime.strptime(firstDataRow["Timestamp"], '%m/%d/%Y')
+        
+        if (abs(newDifference.days-numberOfDays) < currentDifference):
+            currentDifference = abs(newDifference.days-numberOfDays)
+            currentRow = i
+            
+            
+        i = i +1
+        
+
+    #print("Current Row " + str(currentRow) + " Current Differnce " + str(currentDifference)) 
+    return optionsDataFrame.iloc[currentRow]
+            
+useCommandLineArgs = True
+
+# main code
+if(useCommandLineArgs):
+    print("Start date given" + sys.argv[1])
+    print("End date given" + sys.argv[2])
+    print("Directory " + sys.argv[3])
+
+
+    startDate = datetime.strptime(sys.argv[1], '%m/%d/%y')
+    endDate = datetime.strptime(sys.argv[2], '%m/%d/%y')
+    dataDirectory = sys.argv[3]
+else:
+    startDate = datetime.strptime("01/01/20", '%m/%d/%y')
+    endDate = datetime.strptime("05/01/20", '%m/%d/%y')
+    dataDirectory = "/Users/srirama/Documents/toSrirama/SPX.options"
+
+dateRange = pd.date_range(start = startDate, end = endDate)
+print(dateRange)
+for dataDate in dateRange:
+    df = loadOptionFile(dataDate, "SPX", dataDirectory)
+    if (df.empty):
+        print("No dataframe returned")
+        
+    else:
+        print("opened file for date" + dataDate.strftime("%m/%d/%Y"))
+
+    
+        # process the information in the file
+        #deltaOptions = getOptionsWithDelta(df[df["Right"].str.match("call")], -0.5)
+        #print("Number of calls" + str(deltaOptions.shape[0]))
+        #deltaOptions.to_csv(dataDate.strftime("%m-%d")+"-calls.csv")
+        deltaOptions = getOptionsWithDelta(df, -0.5)
+        #print("Number of rows" + str(deltaOptions.shape[0]))
+        #deltaOptions.to_csv(dataDate.strftime("%m-%d")+"-all.csv")
+        theRightOption = getOptionWithDaystoExpiry(60, deltaOptions)
+        print(theRightOption)
+
+
+
+
