@@ -7,7 +7,7 @@ import os.path
 from pandas import DataFrame, Series 
 
 from OptionsDef import optionDef, fullPortfolio
-
+ 
 """ This is the format of the file. 
 Timestamp             object
 Ticker                object

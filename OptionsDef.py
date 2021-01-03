@@ -3,6 +3,23 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
+
+
+""" Design for a collection
+
+startdate
+enddate
+rollconditions - delta, P&L or days elapsed
+addcondition - delta
+optionlist
+totalinitialpremium - this is to calculate profit for the position
+maxloss in a position 
+"""
+class optionCollection:
+    def __init__(self, initialParams):
+        self.optionsList = initialParams.optionsList
+        
+
 class optionDef:
     def __init__(self, expiry, strike, optionType, underLying, currentPrice, delta, gamma, theta, vega, impliedVolatility, quantity):
          self.expiryDate = expiry
@@ -87,7 +104,7 @@ class fullPortfolio:
                     self.portfolioDelta = (self.portfolioDelta) + (optionToBeUpdated.delta * optionToBeUpdated.quantity * 100)
                     self.portfolioGamma = (self.portfolioGamma) + (optionToBeUpdated.gamma * optionToBeUpdated.quantity * 100)
                     self.portfolioTheta = (self.portfolioTheta) + (optionToBeUpdated.theta * optionToBeUpdated.quantity * 100)
-                    self.portfolioVega = )self.portfolioVega) + (optionToBeUpdated.vega * optionToBeUpdated.quantity * 100)
+                    self.portfolioVega = (self.portfolioVega) + (optionToBeUpdated.vega * optionToBeUpdated.quantity * 100)
                     
                     
                 i = i+ 1

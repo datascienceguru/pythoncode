@@ -115,7 +115,10 @@ dateRange = pd.date_range(start = startDate, end = endDate)
 debugPrint(dateRange)
 initializePortfolio = False
 myPortfolio = fullPortfolio(1000000)
-backTestDaysToExpiry = 200
+backTestDaysToExpiry = 400
+
+minNAV = 0
+maxNAV = 0
 
 for dataDate in dateRange:
     df = loadOptionFile(dataDate, "SPX", dataDirectory)
@@ -126,7 +129,7 @@ for dataDate in dateRange:
         debugPrint("opened file for date" + dataDate.strftime("%m/%d/%Y"))
  
         if (initializePortfolio == False):         
-            delta25Options = getOptionsWithDelta(df, -0.25)
+            delta25Options = getOptionsWithDelta(df, -0.20)
             theRight25Option = getOptionWithDaystoExpiry(backTestDaysToExpiry, delta25Options)
             #print("Types in the right option 25")
             debugPrint(theRight25Option)
@@ -134,15 +137,15 @@ for dataDate in dateRange:
                                 theRight25Option["Ticker"], (theRight25Option["Bid Price"]+theRight25Option["Ask Price"])/2, theRight25Option["Delta"], 
                                 theRight25Option["Gamma"],theRight25Option["Theta"], theRight25Option["Vega"],
                                 theRight25Option["ImpliedVolatility"], 0)
-            myPortfolio.tradeOption(traded25Option, -10, "Buy")
+            myPortfolio.tradeOption(traded25Option, -15, "Buy")
 
-            delta10Options = getOptionsWithDelta(df, -0.18)                
+            delta10Options = getOptionsWithDelta(df, -0.12)                
             theRight10Option = getOptionWithDaystoExpiry(backTestDaysToExpiry, delta10Options)
             traded10Option = optionDef(theRight10Option["Expiry"],theRight10Option["Strike"], theRight10Option["Right"],
                                 theRight10Option["Ticker"], (theRight10Option["Bid Price"]+theRight10Option["Ask Price"])/2, theRight10Option["Delta"], 
                                 theRight10Option["Gamma"],theRight10Option["Theta"], theRight10Option["Vega"], 
                                 theRight10Option["ImpliedVolatility"],0)
-            myPortfolio.tradeOption(traded10Option, 20, "Buy")
+            myPortfolio.tradeOption(traded10Option, 30, "Buy")
             myPortfolio.updatePortfolio(df)
             debugPrint("Contents of my portfolio")
             debugPrint("Cash in my portfolio " + str(myPortfolio.cash))
@@ -151,6 +154,9 @@ for dataDate in dateRange:
             initializePortfolio = True
             print("Portfolio on " + dataDate.strftime("%m/%d/%Y") + " SPX =" + str(theRight25Option["Underlying"]))
             print(myPortfolio)
+            minNAV = myPortfolio.currentNAV
+            maxNAV = myPortfolio.currentNAV
+
         else: 
             myPortfolio.updatePortfolio(df)
 
@@ -159,5 +165,12 @@ for dataDate in dateRange:
             firstDataRow = df.iloc[1]
             print("Portfolio on " + dataDate.strftime("%m/%d/%Y") + "SPX = "+ str(firstDataRow["Underlying"]))
             print(myPortfolio)
+            if (minNAV > myPortfolio.currentNAV):
+                minNAV = myPortfolio.currentNAV
+
+            if (maxNAV < myPortfolio.currentNAV):
+                maxNAV = myPortfolio.currentNAV
+
+print("Maximum NAV = " + str(maxNAV) + " Minimum NAV " + str(minNAV))
 
 
