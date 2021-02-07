@@ -115,7 +115,7 @@ dateRange = pd.date_range(start = startDate, end = endDate)
 debugPrint(dateRange)
 initializePortfolio = False
 myPortfolio = fullPortfolio(1000000)
-backTestDaysToExpiry = 400
+backTestDaysToExpiry = 300
 
 minNAV = 0
 maxNAV = 0
@@ -129,7 +129,7 @@ for dataDate in dateRange:
         debugPrint("opened file for date" + dataDate.strftime("%m/%d/%Y"))
  
         if (initializePortfolio == False):         
-            delta25Options = getOptionsWithDelta(df, -0.20)
+            delta25Options = getOptionsWithDelta(df, -0.25)
             theRight25Option = getOptionWithDaystoExpiry(backTestDaysToExpiry, delta25Options)
             #print("Types in the right option 25")
             debugPrint(theRight25Option)
@@ -137,9 +137,9 @@ for dataDate in dateRange:
                                 theRight25Option["Ticker"], (theRight25Option["Bid Price"]+theRight25Option["Ask Price"])/2, theRight25Option["Delta"], 
                                 theRight25Option["Gamma"],theRight25Option["Theta"], theRight25Option["Vega"],
                                 theRight25Option["ImpliedVolatility"], 0)
-            myPortfolio.tradeOption(traded25Option, -15, "Buy")
+            myPortfolio.tradeOption(traded25Option, -10, "Buy")
 
-            delta10Options = getOptionsWithDelta(df, -0.12)                
+            delta10Options = getOptionsWithDelta(df, -0.11)                
             theRight10Option = getOptionWithDaystoExpiry(backTestDaysToExpiry, delta10Options)
             traded10Option = optionDef(theRight10Option["Expiry"],theRight10Option["Strike"], theRight10Option["Right"],
                                 theRight10Option["Ticker"], (theRight10Option["Bid Price"]+theRight10Option["Ask Price"])/2, theRight10Option["Delta"], 

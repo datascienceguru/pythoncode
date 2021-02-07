@@ -18,7 +18,47 @@ maxloss in a position
 class optionCollection:
     def __init__(self, initialParams):
         self.optionsList = initialParams.optionsList
-        
+        self.collectionDelta = 0
+        self.collectionGamma = 0
+        self.collectionTheta = 0
+        self.collectionVega = 0
+        self.collectionValue = 0
+    
+    def updateCollection(self, currentOptionSet):
+        self.collectionDelta = 0
+        self.collectionGamma = 0
+        self.collectionTheta = 0
+        self.collectionVega = 0
+
+        # find the set of options and update the prices
+        for optionToBeUpdated in self.optionsList.values():
+            
+            #print("update portfolio option ")
+            #print(optionToBeUpdated)
+            optionsWithTheSameStrike = currentOptionSet[currentOptionSet["Strike"] == optionToBeUpdated.strike]
+            numberOfOptions = optionsWithTheSameStrike.shape[0]
+            i = 0
+            
+            while i < numberOfOptions:
+                firstDataRow = optionsWithTheSameStrike.iloc[i]
+                if ((firstDataRow["Expiry"] == optionToBeUpdated.expiryDate) and (firstDataRow["Right"] == optionToBeUpdated.optionType)):
+                    #print("Old price was " + str(optionToBeUpdated.currentPrice))
+                    optionToBeUpdated.currentPrice = (firstDataRow["Bid Price"]+firstDataRow["Ask Price"])/2
+                    self.collectionValue = self.collectionValue + (optionToBeUpdated.currentPrice * optionToBeUpdated.quantity * 100)
+                    #print("Newprice is " + str(optionToBeUpdated.currentPrice))
+                    optionToBeUpdated.delta = firstDataRow["Delta"]
+                    optionToBeUpdated.gamma = firstDataRow["Gamma"]
+                    optionToBeUpdated.theta = firstDataRow["Theta"]
+                    optionToBeUpdated.vega = firstDataRow["Vega"]
+                    optionToBeUpdated.impVol = firstDataRow["ImpliedVolatility"]
+                    
+                    self.collectionDelta = (self.collectionDelta) + (optionToBeUpdated.delta * optionToBeUpdated.quantity * 100)
+                    self.collectionGamma = (self.collectionGamma) + (optionToBeUpdated.gamma * optionToBeUpdated.quantity * 100)
+                    self.collectionTheta = (self.collectionTheta) + (optionToBeUpdated.theta * optionToBeUpdated.quantity * 100)
+                    self.collectionVega = (self.collectionVega) + (optionToBeUpdated.vega * optionToBeUpdated.quantity * 100)
+                    
+                    
+                i = i+ 1
 
 class optionDef:
     def __init__(self, expiry, strike, optionType, underLying, currentPrice, delta, gamma, theta, vega, impliedVolatility, quantity):

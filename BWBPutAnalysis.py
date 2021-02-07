@@ -39,7 +39,7 @@ def loadOptionFile(dataDate, ticker, dirPath):
     formattedFileDate = dataDate.strftime("%Y-%m-%d")
     try:
         fileName = dirPath+"/"+ticker+"-"+formattedFileDate+"-greeks.csv"
-        debugPrint("Filename " + fileName)
+        print("Filename " + fileName)
         optionDF = pd.read_csv(fileName)
         #break
     except:
@@ -117,8 +117,8 @@ initializePortfolio = False
 myPortfolio = fullPortfolio(1000000)
 backTestDaysToExpiry = 100
 strike1 = -0.40
-strike2 = -0.28
-strike3 = -0.10
+strike2 = -0.25
+strike3 = -0.20
 
 minNAV = 0
 maxNAV = 0
